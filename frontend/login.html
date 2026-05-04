@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hospital Management System - Login</title>
+    <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <h1><i class="fas fa-hospital-symbol"></i></h1>
+                <h1>MediCare</h1>
+                <p>Hospital Management System</p>
+            </div>
+
+            <form class="login-form" id="loginForm">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user text-primary"></i> Username</label>
+                    <input type="text" id="username" placeholder="Enter your username" required />
+                    <div class="error-message" id="usernameError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock text-primary"></i> Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required />
+                    <div class="error-message" id="passwordError"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="role"><i class="fas fa-user-tag text-primary"></i> Select Role</label>
+                    <select id="role" required>
+                        <option value="" disabled selected>-- Choose a role --</option>
+                        <option value="admin">Admin</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="receptionist">Receptionist</option>
+                    </select>
+                    <div class="error-message" id="roleError"></div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg" id="loginSubmitBtn">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+
+                <div class="error-message login-error" id="loginError"></div>
+            </form>
+
+            <div class="demo-credentials">
+                <p><strong>Demo Credentials:</strong></p>
+                <p>admin / admin123</p>
+                <p>doctor / doctor123</p>
+                <p>receptionist / rec123</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+    <script src="js/services/dataService.js"></script>
+    <script src="js/utils/validator.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+
+            // Clear previous errors
+            document.getElementById('usernameError').classList.remove('show');
+            document.getElementById('passwordError').classList.remove('show');
+            document.getElementById('roleError').classList.remove('show');
+            document.getElementById('loginError').classList.remove('show');
+
+            let hasError = false;
+
+            if (!username) {
+                showError('usernameError', 'Username is required');
+                hasError = true;
+            }
+
+            if (!password || password.length < 3) {
+                showError('passwordError', 'Password must be at least 3 characters');
+                hasError = true;
+            }
+
+            if (!role) {
+                showError('roleError', 'Please select a role');
+                hasError = true;
+            }
+
+            if (hasError) return;
+
+            setLoginLoading(true);
+
+            // Demo authentication
+            if (validateLogin(username, password, role)) {
+                // Store user session
+                sessionStorage.setItem('user', JSON.stringify({
+                    username: username,
+                    role: role,
+                    loginTime: new Date().toISOString()
+                }));
+
+                // Redirect to dashboard
+                window.location.href = 'index.html';
+            } else {
+                setLoginLoading(false);
+                showError('loginError', 'Invalid credentials. Please try again.');
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.currentTarget.requestSubmit();
+            }
+        });
+
+        function showError(elementId, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.classList.add('show');
+        }
+
+        function setLoginLoading(isLoading) {
+            const submitBtn = document.getElementById('loginSubmitBtn');
+            submitBtn.disabled = isLoading;
+            submitBtn.classList.toggle('is-loading', isLoading);
+            submitBtn.innerHTML = isLoading
+                ? '<i class="fas fa-spinner fa-spin"></i> Logging in...'
+                : '<i class="fas fa-sign-in-alt"></i> Login';
+        }
+
+        function validateLogin(username, password, role) {
+            const validUsers = {
+                'admin': { password: 'admin123', role: 'admin' },
+                'doctor': { password: 'doctor123', role: 'doctor' },
+                'receptionist': { password: 'rec123', role: 'receptionist' }
+            };
+
+            const user = validUsers[username];
+            return user && user.password === password && user.role === role;
+        }
+    </script>
+</body>
+
+</html>
